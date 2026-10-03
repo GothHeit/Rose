@@ -69,6 +69,21 @@ class SkinNameResolver:
         else:
             self._no_skin_id_suppressed += 1
     
+    def _selected_custom_mod_skin_id(self) -> Optional[int]:
+        """Target skin of the selected custom mod, if it belongs to the current champion"""
+        selected_custom_mod = getattr(self.state, 'selected_custom_mod', None)
+        if not selected_custom_mod:
+            return None
+        skin_id = selected_custom_mod.get('skin_id')
+        if not skin_id:
+            return None
+        champ_id = getattr(self.state, 'locked_champ_id', None) or getattr(self.state, 'hovered_champ_id', None)
+        mod_champ_id = selected_custom_mod.get('champion_id')
+        if champ_id and mod_champ_id and mod_champ_id != champ_id:
+            return None
+        log.debug(f"[INJECT] No hovered skin; using custom mod target skin {skin_id}")
+        return skin_id
+
     def resolve_injection_name(self) -> Optional[str]:
         """Resolve injection name based on current state
         
@@ -142,8 +157,9 @@ class SkinNameResolver:
                 log.error(f"[RANDOM] No random skin ID available for injection")
                 return None
         
-        # Normal hovered skin
-        skin_id = getattr(self.state, 'last_hovered_skin_id', None)
+        # Normal hovered skin, or the selected custom mod's own target skin when
+        # no skin was hovered (the mod already says which skin it replaces)
+        skin_id = getattr(self.state, 'last_hovered_skin_id', None) or self._selected_custom_mod_skin_id()
         if skin_id:
             from utils.core.utilities import is_base_skin
             chroma_id_map = self.skin_scraper.cache.chroma_id_map if self.skin_scraper and self.skin_scraper.cache else None
