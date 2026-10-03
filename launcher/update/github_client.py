@@ -13,7 +13,7 @@ from utils.core.logging import get_logger
 
 log = get_logger()
 
-GITHUB_RELEASE_API = "https://api.github.com/repos/Alban1911/Rose/releases/latest"
+GITHUB_RELEASE_API = "https://api.github.com/repos/GothHeit/Rose/releases/latest"
 
 
 class GitHubClient:
